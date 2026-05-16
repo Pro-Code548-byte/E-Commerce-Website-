@@ -78,6 +78,13 @@ function NavBar() {
               <p className="font-bold">Cart</p>
             </div>
           </NavLink>
+
+          <NavLink to="/orders">
+            <div className="flex items-center gap-1 hover:text-orange-400 cursor-pointer">
+              <MdStars className="text-2xl font-bold text-orange-500" />
+              <p className="font-bold">Orders</p>
+            </div>
+          </NavLink>
         </div>
       </nav>
     </>

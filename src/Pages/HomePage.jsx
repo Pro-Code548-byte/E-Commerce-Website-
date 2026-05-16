@@ -4,6 +4,7 @@ import { useAuth } from "../Context/AuthContext";
 
 export default function HomePage() {
   const [products, setProducts] = useState([]);
+  const [quantities, setQuantities] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -49,8 +50,8 @@ export default function HomePage() {
     navigate(`/products/${id}`);
   };
 
-  const handleAddToCart = (product, event) => {
-    event.stopPropagation();
+  const handleAddToCart = (product, qty = 1, event) => {
+    if (event) event.stopPropagation();
 
     if (!user) {
       navigate("/signup");
@@ -58,14 +59,31 @@ export default function HomePage() {
     }
 
     const storedCart = JSON.parse(localStorage.getItem("cart") || "[]");
-    const cartHasProduct = storedCart.some((item) => item._id === product._id);
+    const existingIndex = storedCart.findIndex(
+      (item) => item._id === product._id,
+    );
 
-    if (!cartHasProduct) {
-      storedCart.push(product);
-      localStorage.setItem("cart", JSON.stringify(storedCart));
+    if (existingIndex > -1) {
+      storedCart[existingIndex].quantity = Math.min(
+        30,
+        (storedCart[existingIndex].quantity || 1) + qty,
+      );
+    } else {
+      storedCart.push({ ...product, quantity: qty });
     }
 
+    localStorage.setItem("cart", JSON.stringify(storedCart));
     navigate("/products");
+  };
+
+  const incrementQty = (id) => {
+    if (!user) return navigate("/signup");
+    setQuantities((q) => ({ ...q, [id]: Math.min(30, (q[id] || 1) + 1) }));
+  };
+
+  const decrementQty = (id) => {
+    if (!user) return navigate("/signup");
+    setQuantities((q) => ({ ...q, [id]: Math.max(1, (q[id] || 1) - 1) }));
   };
 
   if (loading) return <h2>Loading...</h2>;
@@ -111,13 +129,47 @@ export default function HomePage() {
                 </p>
               </div>
 
-              <button
-                type="button"
-                onClick={(event) => handleAddToCart(product, event)}
-                className="mt-4 w-full rounded-full bg-orange-500 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600"
-              >
-                Add to cart
-              </button>
+              <div className="mt-4 flex items-center gap-3">
+                <div className="flex items-center gap-2 rounded-md border border-slate-200 px-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      decrementQty(product._id);
+                    }}
+                    className="px-2 text-lg text-slate-700"
+                    aria-label="decrease"
+                  >
+                    −
+                  </button>
+                  <div className="px-3 text-sm font-medium">
+                    {quantities[product._id] || 1}
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      incrementQty(product._id);
+                    }}
+                    className="px-2 text-lg text-slate-700"
+                    aria-label="increase"
+                  >
+                    +
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={(event) =>
+                    handleAddToCart(
+                      product,
+                      quantities[product._id] || 1,
+                      event,
+                    )
+                  }
+                  className="flex-1 rounded-full bg-orange-500 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600"
+                >
+                  Add to cart
+                </button>
+              </div>
             </div>
           ))}
         </div>

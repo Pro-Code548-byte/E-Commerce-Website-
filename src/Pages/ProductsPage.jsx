@@ -11,6 +11,29 @@ export default function ProductsPage() {
     setCartItems(savedCart);
   }, []);
 
+  const saveOrder = (order) => {
+    const existingOrders = JSON.parse(localStorage.getItem("orders") || "[]");
+    localStorage.setItem("orders", JSON.stringify([order, ...existingOrders]));
+  };
+
+  const createOrder = (items) => {
+    const total = items.reduce(
+      (sum, item) => sum + Number(item.price || 0) * (item.quantity || 1),
+      0,
+    );
+
+    return {
+      id: `ORD-${Date.now()}`,
+      user: user?.email || user?.name || "guest",
+      items,
+      total,
+      createdAt: new Date().toISOString(),
+      status: "pending",
+      paymentMethod: null,
+      transportStage: "Waiting for payment",
+    };
+  };
+
   const handleRemove = (id) => {
     const updatedCart = cartItems.filter((item) => item._id !== id);
     setCartItems(updatedCart);
@@ -19,22 +42,37 @@ export default function ProductsPage() {
 
   const handleQuantityChange = (id, qty) => {
     const updated = cartItems.map((item) =>
-      item._id === id ? { ...item, quantity: qty } : item,
+      item._id === id ? { ...item, quantity: Math.max(1, qty) } : item,
     );
     setCartItems(updated);
     localStorage.setItem("cart", JSON.stringify(updated));
   };
 
+  const handleItemPurchase = (id) => {
+    const item = cartItems.find((product) => product._id === id);
+    if (!item) return;
+
+    const order = createOrder([item]);
+    saveOrder(order);
+
+    const updatedCart = cartItems.filter((product) => product._id !== id);
+    setCartItems(updatedCart);
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
+
+    alert(`Purchase successful — order ${order.id} created.`);
+  };
+
   const handlePurchase = () => {
-    // simple simulated purchase flow
-    const total = cartItems.reduce(
-      (s, it) => s + Number(it.price || 0) * (it.quantity || 1),
-      0,
-    );
-    // In a real app you'd call backend here. We'll clear cart and show an alert.
-    localStorage.removeItem("cart");
+    if (cartItems.length === 0) return;
+
+    const order = createOrder(cartItems);
+    saveOrder(order);
+    localStorage.setItem("cart", JSON.stringify([]));
     setCartItems([]);
-    alert(`Purchase successful — paid $${total.toFixed(2)}`);
+
+    alert(
+      `Purchase successful — order ${order.id} for $${order.total.toFixed(2)} created.`,
+    );
   };
 
   return (
@@ -73,7 +111,7 @@ export default function ProductsPage() {
               <img
                 src={product.imageUrl}
                 alt={product.name}
-                className="h-28 w-full max-w-[130px] object-contain"
+                className="h-28 w-full max-w-32.5 object-contain"
               />
 
               <div className="flex-1">
@@ -83,25 +121,38 @@ export default function ProductsPage() {
                 >
                   {product.name}
                 </Link>
-                <div className="mt-2 flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <label className="text-sm text-slate-600">Qty</label>
-                    <select
-                      value={product.quantity || 1}
-                      onChange={(e) =>
+                <p className="mt-2 text-sm text-slate-600">
+                  ${Number(product.price || 0).toFixed(2)} each
+                </p>
+                <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2">
+                    <button
+                      type="button"
+                      onClick={() =>
                         handleQuantityChange(
                           product._id,
-                          Number(e.target.value),
+                          (product.quantity || 1) - 1,
                         )
                       }
-                      className="rounded-md border border-slate-200 bg-white px-2 py-1"
+                      className="rounded-full bg-white px-2 py-1 text-slate-700 transition hover:bg-slate-100"
                     >
-                      {Array.from({ length: 30 }, (_, i) => i + 1).map((n) => (
-                        <option key={n} value={n}>
-                          {n}
-                        </option>
-                      ))}
-                    </select>
+                      -
+                    </button>
+                    <span className="w-10 text-center font-medium text-slate-900">
+                      {product.quantity || 1}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleQuantityChange(
+                          product._id,
+                          (product.quantity || 1) + 1,
+                        )
+                      }
+                      className="rounded-full bg-white px-2 py-1 text-slate-700 transition hover:bg-slate-100"
+                    >
+                      +
+                    </button>
                   </div>
 
                   <p className="text-orange-500 font-bold">
@@ -113,14 +164,23 @@ export default function ProductsPage() {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2 sm:items-end">
-                <button
-                  type="button"
-                  onClick={() => handleRemove(product._id)}
-                  className="w-full rounded-full border border-red-200 bg-red-50 px-4 py-2 text-red-700 transition hover:border-red-300 hover:bg-red-100 sm:w-auto"
-                >
-                  Remove
-                </button>
+              <div className="flex flex-wrap items-center gap-2 sm:flex-col sm:items-end">
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleRemove(product._id)}
+                    className="rounded-full border border-red-200 bg-red-50 px-4 py-2 text-red-700 transition hover:border-red-300 hover:bg-red-100"
+                  >
+                    Remove
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleItemPurchase(product._id)}
+                    className="rounded-full bg-orange-500 px-4 py-2 text-white transition hover:bg-orange-600"
+                  >
+                    Buy
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -150,7 +210,7 @@ export default function ProductsPage() {
                 onClick={handlePurchase}
                 className="rounded-full bg-orange-500 px-5 py-2 text-white hover:bg-orange-600"
               >
-                Purchase
+                Purchase all
               </button>
             </div>
           </div>

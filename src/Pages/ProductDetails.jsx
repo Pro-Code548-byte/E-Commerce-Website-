@@ -1,11 +1,14 @@
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
+import { useAuth } from "../Context/AuthContext";
 
 export default function ProductDetails() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [adding, setAdding] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const BASE_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
@@ -80,20 +83,35 @@ export default function ProductDetails() {
               Quantity
             </label>
             <div className="flex items-center gap-3">
-              <select
-                value={quantity}
-                onChange={(e) => setQuantity(Number(e.target.value))}
-                className="rounded-md border border-slate-200 bg-white px-3 py-2"
-              >
-                {Array.from({ length: 30 }, (_, i) => i + 1).map((n) => (
-                  <option key={n} value={n}>
-                    {n}
-                  </option>
-                ))}
-              </select>
+              <div className="flex items-center gap-2 rounded-md border border-slate-200 px-2">
+                <button
+                  onClick={() => {
+                    if (!user) return navigate("/signup");
+                    setQuantity((q) => Math.max(1, q - 1));
+                  }}
+                  className="px-3 text-lg text-slate-700"
+                  aria-label="decrease"
+                >
+                  −
+                </button>
+                <div className="px-3 text-sm font-medium">{quantity}</div>
+                <button
+                  onClick={() => {
+                    if (!user) return navigate("/signup");
+                    setQuantity((q) => Math.min(30, q + 1));
+                  }}
+                  className="px-3 text-lg text-slate-700"
+                  aria-label="increase"
+                >
+                  +
+                </button>
+              </div>
 
               <button
-                onClick={addToCart}
+                onClick={() => {
+                  if (!user) return navigate("/signup");
+                  addToCart();
+                }}
                 disabled={adding}
                 className="rounded-full bg-orange-500 px-4 py-2 text-white shadow-sm hover:bg-orange-600 disabled:opacity-60"
               >

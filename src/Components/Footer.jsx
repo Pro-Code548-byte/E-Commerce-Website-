@@ -1,6 +1,7 @@
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from "react-icons/fa";
 import { MdLocationOn, MdPhone, MdEmail } from "react-icons/md";
 import { SiVisa, SiMastercard, SiPaypal } from "react-icons/si";
+import { NavLink } from "react-router";
 
 function Footer() {
   return (
@@ -38,36 +39,36 @@ function Footer() {
             </h4>
             <ul className="space-y-2">
               <li>
-                <a
-                  href="#"
+                <NavLink
+                  to="/"
                   className="text-gray-300 hover:text-white transition"
                 >
                   Home
-                </a>
+                </NavLink>
               </li>
               <li>
-                <a
-                  href="#"
+                <NavLink
+                  to="/products"
                   className="text-gray-300 hover:text-white transition"
                 >
                   Products
-                </a>
+                </NavLink>
               </li>
               <li>
-                <a
-                  href="#"
+                <NavLink
+                  to="/account"
                   className="text-gray-300 hover:text-white transition"
                 >
                   About Us
-                </a>
+                </NavLink>
               </li>
               <li>
-                <a
-                  href="#"
+                <NavLink
+                  to="/orders"
                   className="text-gray-300 hover:text-white transition"
                 >
                   Careers
-                </a>
+                </NavLink>
               </li>
             </ul>
           </div>
@@ -79,20 +80,20 @@ function Footer() {
             </h4>
             <ul className="space-y-2">
               <li>
-                <a
-                  href="#"
+                <NavLink
+                  to="/contact"
                   className="text-gray-300 hover:text-white transition"
                 >
                   Help Center
-                </a>
+                </NavLink>
               </li>
               <li>
-                <a
-                  href="#"
+                <NavLink
+                  to="/contact"
                   className="text-gray-300 hover:text-white transition"
                 >
                   Returns & Refunds
-                </a>
+                </NavLink>
               </li>
               <li>
                 <a
@@ -156,9 +157,9 @@ function Footer() {
             <a href="#" className="hover:text-white transition">
               Cookie Settings
             </a>
-            <a href="#" className="hover:text-white transition">
+            <NavLink to="/contact" className="hover:text-white transition">
               Contact
-            </a>
+            </NavLink>
           </div>
         </div>
       </div>

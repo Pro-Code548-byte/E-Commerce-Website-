@@ -7,6 +7,7 @@ import AccountPage from "./Pages/AccountPage";
 import ContactPage from "./Pages/ContactPage";
 import ProductsPage from "./Pages/ProductsPage";
 import ProductDetails from "./Pages/ProductDetails";
+import OrderPage from "./Pages/OrderPage";
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/account" element={<AccountPage />} />
+        <Route path="/orders" element={<OrderPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/products/:id" element={<ProductDetails />} />

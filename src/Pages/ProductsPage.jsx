@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useAuth } from "../Context/AuthContext";
 
 export default function ProductsPage() {
   const [cartItems, setCartItems] = useState([]);
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const savedCart = JSON.parse(localStorage.getItem("cart") || "[]");
@@ -59,7 +60,7 @@ export default function ProductsPage() {
     setCartItems(updatedCart);
     localStorage.setItem("cart", JSON.stringify(updatedCart));
 
-    alert(`Purchase successful — order ${order.id} created.`);
+    navigate("/orders");
   };
 
   const handlePurchase = () => {
@@ -70,9 +71,7 @@ export default function ProductsPage() {
     localStorage.setItem("cart", JSON.stringify([]));
     setCartItems([]);
 
-    alert(
-      `Purchase successful — order ${order.id} for $${order.total.toFixed(2)} created.`,
-    );
+    navigate("/orders");
   };
 
   return (
